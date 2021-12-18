@@ -75,5 +75,4 @@ public interface StringList {
     // и вернуть его.
     String[] toArray();
 
-    String[] getArray();
 }

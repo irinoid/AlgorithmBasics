@@ -4,34 +4,40 @@ public class StringListImpl implements StringList {
 
     private String[] stringArray;
 
-    public StringListImpl() {
-        this.stringArray = new String[]{"abc", "def", "ghi", "jkl", "mno"};
-    }
-
-    @Override
-    public String[] getArray() {
-        return stringArray;
+    public StringListImpl(int sizeStringArray) {
+        this.stringArray = new String[sizeStringArray];
     }
 
     @Override
     public String add(String item) {
-        String[] stringArrayTemp = new String[stringArray.length + 1];
+
+        for (int i = 0; i < stringArray.length; i++) {
+            if (stringArray[i] == null) {
+                stringArray[i] = item;
+                return stringArray[i];
+            }
+        }
+        String[] stringArrayTemp = new String[stringArray.length + 10];
+        int sizeArray = stringArray.length;
         System.arraycopy(stringArray, 0, stringArrayTemp, 0, stringArray.length);
-        stringArrayTemp[stringArrayTemp.length - 1] = item;
-        stringArray = Arrays.copyOf(stringArrayTemp, stringArrayTemp.length);
-        return stringArray[stringArray.length - 1];
+        stringArrayTemp[stringArray.length] = item;
+        stringArray = stringArrayTemp;
+        return stringArray[sizeArray];
     }
 
     @Override
     public String add(int index, String item) {
+        for (int i = 0; i < index; i++) {
+            if (stringArray[i] == null) {
+                throw new IndexOutOfBoundsException("Индекс превышает длину списка");
+            }
+        }
         if (index < stringArray.length - 1) {
             String[] stringArrayTemp = new String[stringArray.length + 1];
             System.arraycopy(stringArray, 0, stringArrayTemp, 0, index);
             stringArrayTemp[index] = item;
-            for (int i = index; i < stringArray.length; i++) {
-                stringArrayTemp[i + 1] = stringArray[i];
-            }
-            stringArray = Arrays.copyOf(stringArrayTemp, stringArrayTemp.length);
+            System.arraycopy(stringArray, index, stringArrayTemp, index + 1, stringArray.length - index - 1);
+            stringArray = stringArrayTemp;
             return stringArray[index];
         }
         throw new IndexOutOfBoundsException("Индекс превышает длину массива");
@@ -39,6 +45,11 @@ public class StringListImpl implements StringList {
 
     @Override
     public String set(int index, String item) {
+        for (int i = 0; i < index; i++) {
+            if (stringArray[i] == null) {
+                throw new IndexOutOfBoundsException("Индекс превышает длину списка");
+            }
+        }
         if (index < stringArray.length - 1) {
             stringArray[index] = item;
             return stringArray[index];
@@ -51,30 +62,28 @@ public class StringListImpl implements StringList {
         for (int i = 0; i < stringArray.length; i++) {
             if (stringArray[i] == item) {
                 String strTemp = stringArray[i];
-                String[] stringArrayTemp = new String[stringArray.length - 1];
-                if (!(i == 0)) {
-                    System.arraycopy(stringArray, 0, stringArrayTemp, 0, i - 1);
-                    //System.arraycopy(stringArray, i + 1, stringArrayTemp, i, stringArrayTemp.length);
+                for (int j = i + 1; j < stringArray.length; j++) {
+                    stringArray[j] = stringArray[j - 1];
                 }
-                System.arraycopy(stringArray, i + 1, stringArrayTemp, i, stringArray.length - i - 1);
-                stringArray = Arrays.copyOf(stringArrayTemp, stringArrayTemp.length);
+                String[] stringArrayTemp = new String[stringArray.length - 1];
+                System.arraycopy(stringArray, 0, stringArrayTemp, 0, stringArray.length - 1);
+                stringArray = stringArrayTemp;
                 return strTemp;
             }
         }
         throw new IllegalArgumentException("Элемента нет в списке");
-
     }
 
     @Override
     public String remove(int index) {
         if (index < stringArray.length) {
             String strTemp = stringArray[index];
-            String[] stringArrayTemp = new String[stringArray.length - 1];
-            if (index != 0) {
-                System.arraycopy(stringArray, 0, stringArrayTemp, 0, index);
+            for (int i=index; i<stringArray.length; i++){
+                stringArray[i]=stringArray[i+1];
             }
-            System.arraycopy(stringArray, index + 1, stringArrayTemp, index, stringArray.length - index - 1);
-            stringArray = Arrays.copyOf(stringArrayTemp, stringArrayTemp.length);
+            String[] stringArrayTemp = new String[stringArray.length - 1];
+            System.arraycopy(stringArray, 0, stringArrayTemp, 0, stringArray.length - 1);
+            stringArray = stringArrayTemp;
             return strTemp;
         }
         throw new IndexOutOfBoundsException("Индекс превышает длину массива");
@@ -82,8 +91,8 @@ public class StringListImpl implements StringList {
 
     @Override
     public boolean contains(String item) {
-        for (String i : stringArray) {
-            if (i == item) {
+        for (int i=0; i< stringArray.length;i++) {
+            if (stringArray[i].equals(item)) {
                 return true;
             }
         }
@@ -93,7 +102,7 @@ public class StringListImpl implements StringList {
     @Override
     public int indexOf(String item) {
         for (int i = 0; i < stringArray.length; i++) {
-            if (stringArray[i] == item) {
+            if (stringArray[i].equals(item)) {
                 return i;
             }
         }
@@ -103,7 +112,7 @@ public class StringListImpl implements StringList {
     @Override
     public int lastIndexOf(String item) {
         for (int i = stringArray.length - 1; i >= 0; i--) {
-            if (stringArray[i] == item) {
+            if (stringArray[i].equals(item)) {
                 return i;
             }
         }
@@ -120,53 +129,54 @@ public class StringListImpl implements StringList {
 
     @Override
     public boolean equals(String[] otherList) {
-        boolean arrEqual = true;
         if (stringArray.length != otherList.length) {
-            arrEqual = false;
+            return false;
         } else {
             for (int i = 0; i < stringArray.length; i++) {
-                if (stringArray[i] != otherList[i]) {
-                    arrEqual = false;
-                    break;
+                if (!stringArray[i].equals(otherList[i])) {
+                    return false;
                 }
             }
         }
-        return arrEqual;
+        return true;
     }
 
     @Override
     public int size() {
-        int arrSize = 0;
-        for (String i : stringArray) {
-            if ((i != null) && (i != "")) {
-                arrSize++;
+        int listSize = 0;
+        for (int i=0;i< stringArray.length;i++) {
+            if (!stringArray[i].equals(null)){
+                listSize++;
             }
         }
-        return arrSize;
+        return listSize;
     }
 
     @Override
     public boolean isEmpty() {
-        boolean arrEmpty = true;
-        for (String i : stringArray) {
-            if ((i != null)) {
-                arrEmpty = false;
-                break;
+        for (int i=0; i< stringArray.length; i++) {
+            if (!stringArray[i].equals(null)) {
+                return false;
             }
         }
-        return arrEmpty;
+        return true;
     }
 
     @Override
     public void clear() {
-        for (String i : stringArray) {
-            i = null;
-        }
+        Arrays.fill(stringArray, null);
     }
 
     @Override
     public String[] toArray() {
-        stringArray = new String[]{"", "", "", ""};
-        return stringArray;
+        String[] newStringArray = new String[stringArray.length];
+        int j = 0;
+        for (int i = 0; i < stringArray.length; i++) {
+            if (stringArray[i] != null) {
+                newStringArray[j] = stringArray[i];
+                j++;
+            }
+        }
+        return newStringArray;
     }
 }
