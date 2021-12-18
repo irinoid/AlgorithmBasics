@@ -12,7 +12,7 @@ public class StringListImpl implements StringList {
     public String add(String item) {
 
         for (int i = 0; i < stringArray.length; i++) {
-            if (stringArray[i] == null) {
+            if (stringArray[i].equals(null)) {
                 stringArray[i] = item;
                 return stringArray[i];
             }
@@ -28,7 +28,7 @@ public class StringListImpl implements StringList {
     @Override
     public String add(int index, String item) {
         for (int i = 0; i < index; i++) {
-            if (stringArray[i] == null) {
+            if (stringArray[i].equals(null)) {
                 throw new IndexOutOfBoundsException("Индекс превышает длину списка");
             }
         }
@@ -46,7 +46,7 @@ public class StringListImpl implements StringList {
     @Override
     public String set(int index, String item) {
         for (int i = 0; i < index; i++) {
-            if (stringArray[i] == null) {
+            if (stringArray[i].equals(null)) {
                 throw new IndexOutOfBoundsException("Индекс превышает длину списка");
             }
         }
@@ -60,7 +60,7 @@ public class StringListImpl implements StringList {
     @Override
     public String remove(String item) {
         for (int i = 0; i < stringArray.length; i++) {
-            if (stringArray[i] == item) {
+            if (stringArray[i].equals(item)) {
                 String strTemp = stringArray[i];
                 for (int j = i + 1; j < stringArray.length; j++) {
                     stringArray[j] = stringArray[j - 1];
@@ -172,7 +172,7 @@ public class StringListImpl implements StringList {
         String[] newStringArray = new String[stringArray.length];
         int j = 0;
         for (int i = 0; i < stringArray.length; i++) {
-            if (stringArray[i] != null) {
+            if (!stringArray[i].equals(null)) {
                 newStringArray[j] = stringArray[i];
                 j++;
             }
