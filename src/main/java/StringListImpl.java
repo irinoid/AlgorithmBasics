@@ -151,9 +151,9 @@ public class StringListImpl implements StringList {
 
     @Override
     public String[] toArray() {
-        String[] newStringArray = new String[stringArray.length];
+        String[] newStringArray = new String[size];
         int j = 0;
-        for (int i = 0; i < stringArray.length; i++) {
+        for (int i = 0; i < size; i++) {
             if (!stringArray[i].equals(null)) {
                 newStringArray[j] = stringArray[i];
                 j++;
