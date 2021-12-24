@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class StringListImpl implements StringList {
@@ -5,93 +6,87 @@ public class StringListImpl implements StringList {
     private String[] stringArray;
 
     public StringListImpl(int sizeStringArray) {
-        this.stringArray = new String[sizeStringArray];
+        if (sizeStringArray > 0) {
+            this.stringArray = new String[sizeStringArray];
+        } else {
+            throw new IllegalArgumentException("Недопустимый размер списка");
+        }
+    }
+
+    private int size = size();
+
+    private void rangeCheckForAdd(int index) {
+        if (index > size || index < 0)
+            throw new IndexOutOfBoundsException("Индекс превышает длину списка");
+    }
+
+    private String add(String item, int index) {
+        rangeCheckForAdd(index);
+        stringArray[index] = item;
+        size++;
+        return stringArray[index];
     }
 
     @Override
     public String add(String item) {
-
-        for (int i = 0; i < stringArray.length; i++) {
-            if (stringArray[i].equals(null)) {
-                stringArray[i] = item;
-                return stringArray[i];
-            }
+        if (size < stringArray.length) {
+            return add(item, size);
         }
         String[] stringArrayTemp = new String[stringArray.length + 10];
-        int sizeArray = stringArray.length;
-        System.arraycopy(stringArray, 0, stringArrayTemp, 0, stringArray.length);
-        stringArrayTemp[stringArray.length] = item;
+        System.arraycopy(stringArray, 0, stringArrayTemp, 0, size);
         stringArray = stringArrayTemp;
-        return stringArray[sizeArray];
+        return add(item, size);
     }
 
     @Override
     public String add(int index, String item) {
-        for (int i = 0; i < index; i++) {
-            if (stringArray[i].equals(null)) {
-                throw new IndexOutOfBoundsException("Индекс превышает длину списка");
-            }
-        }
-        if (index < stringArray.length - 1) {
-            String[] stringArrayTemp = new String[stringArray.length + 1];
-            System.arraycopy(stringArray, 0, stringArrayTemp, 0, index);
-            stringArrayTemp[index] = item;
-            System.arraycopy(stringArray, index, stringArrayTemp, index + 1, stringArray.length - index - 1);
+        rangeCheckForAdd(index);
+        if (stringArray.length < size + 1) {
+            String[] stringArrayTemp = new String[stringArray.length + 10];
+            System.arraycopy(stringArray, 0, stringArrayTemp, 0, stringArray.length);
             stringArray = stringArrayTemp;
-            return stringArray[index];
         }
-        throw new IndexOutOfBoundsException("Индекс превышает длину массива");
+        for (int i = index; i < size + 1; i++) {
+            stringArray[i + 1] = stringArray[i];
+        }
+        return add(item, index);
     }
 
     @Override
     public String set(int index, String item) {
-        for (int i = 0; i < index; i++) {
-            if (stringArray[i].equals(null)) {
-                throw new IndexOutOfBoundsException("Индекс превышает длину списка");
-            }
-        }
-        if (index < stringArray.length - 1) {
-            stringArray[index] = item;
-            return stringArray[index];
-        }
-        throw new IndexOutOfBoundsException("Индекс превышает длину массива");
+        rangeCheckForAdd(index);
+        stringArray[index] = item;
+        return stringArray[index];
     }
 
     @Override
     public String remove(String item) {
-        for (int i = 0; i < stringArray.length; i++) {
-            if (stringArray[i].equals(item)) {
-                String strTemp = stringArray[i];
-                for (int j = i + 1; j < stringArray.length; j++) {
+        int index = indexOf(item);
+        String strTemp = stringArray[index];
+        if (index>0){
+                for (int j = index; j < stringArray.length; j++) {
                     stringArray[j] = stringArray[j - 1];
                 }
-                String[] stringArrayTemp = new String[stringArray.length - 1];
-                System.arraycopy(stringArray, 0, stringArrayTemp, 0, stringArray.length - 1);
-                stringArray = stringArrayTemp;
+                size--;
                 return strTemp;
             }
-        }
         throw new IllegalArgumentException("Элемента нет в списке");
     }
 
     @Override
     public String remove(int index) {
-        if (index < stringArray.length) {
-            String strTemp = stringArray[index];
-            for (int i=index; i<stringArray.length; i++){
-                stringArray[i]=stringArray[i+1];
-            }
-            String[] stringArrayTemp = new String[stringArray.length - 1];
-            System.arraycopy(stringArray, 0, stringArrayTemp, 0, stringArray.length - 1);
-            stringArray = stringArrayTemp;
-            return strTemp;
+        rangeCheckForAdd(index);
+        String strTemp = stringArray[index];
+        for (int i = index; i < stringArray.length; i++) {
+            stringArray[i] = stringArray[i + 1];
         }
-        throw new IndexOutOfBoundsException("Индекс превышает длину массива");
+        size--;
+        return strTemp;
     }
 
     @Override
     public boolean contains(String item) {
-        for (int i=0; i< stringArray.length;i++) {
+        for (int i = 0; i <= size; i++) {
             if (stringArray[i].equals(item)) {
                 return true;
             }
@@ -121,50 +116,37 @@ public class StringListImpl implements StringList {
 
     @Override
     public String get(int index) {
-        if (index < stringArray.length) {
-            return stringArray[index];
-        }
-        throw new IndexOutOfBoundsException("Индекс превышает размер массива");
+        rangeCheckForAdd(index);
+        return stringArray[index];
     }
 
     @Override
     public boolean equals(String[] otherList) {
         if (stringArray.length != otherList.length) {
             return false;
-        } else {
-            for (int i = 0; i < stringArray.length; i++) {
-                if (!stringArray[i].equals(otherList[i])) {
-                    return false;
-                }
-            }
         }
-        return true;
+        return Arrays.equals(stringArray, otherList);
     }
 
     @Override
     public int size() {
-        int listSize = 0;
-        for (int i=0;i< stringArray.length;i++) {
-            if (!stringArray[i].equals(null)){
-                listSize++;
+        for (int i = 0; i < stringArray.length; i++) {
+            if (!stringArray[i].equals(null)) {
+                size++;
             }
         }
-        return listSize;
+        return size;
     }
 
     @Override
     public boolean isEmpty() {
-        for (int i=0; i< stringArray.length; i++) {
-            if (!stringArray[i].equals(null)) {
-                return false;
-            }
-        }
-        return true;
+        return size == 0;
     }
 
     @Override
     public void clear() {
         Arrays.fill(stringArray, null);
+        size = 0;
     }
 
     @Override
