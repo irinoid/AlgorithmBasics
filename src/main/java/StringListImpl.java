@@ -1,103 +1,97 @@
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class StringListImpl implements StringList {
 
-    private String[] stringArray;
+    private String[] storage;
+    private int size;
 
     public StringListImpl(int sizeStringArray) {
-        if (sizeStringArray > 0) {
-            this.stringArray = new String[sizeStringArray];
-        } else {
+        if (sizeStringArray < 0) {
             throw new IllegalArgumentException("Недопустимый размер списка");
+        }
+        this.storage = new String[sizeStringArray];
+    }
+
+    private void validateIndex(int index) {
+        if (index > size || index < 0) {
+            throw new IndexOutOfBoundsException("Индекс превышает длину списка");
         }
     }
 
-    private int size = size();
-
-    private void rangeCheckForAdd(int index) {
-        if (index > size || index < 0)
-            throw new IndexOutOfBoundsException("Индекс превышает длину списка");
-    }
-
     private String add(String item, int index) {
-        rangeCheckForAdd(index);
-        stringArray[index] = item;
+        validateIndex(index);
+        storage[index] = item;
         size++;
-        return stringArray[index];
+        return storage[index];
     }
 
     @Override
     public String add(String item) {
-        if (size < stringArray.length) {
+        if (size < storage.length) {
             return add(item, size);
         }
-        String[] stringArrayTemp = new String[stringArray.length + 10];
-        System.arraycopy(stringArray, 0, stringArrayTemp, 0, size);
-        stringArray = stringArrayTemp;
+        if (size == storage.length) {
+            grow();
+        }
         return add(item, size);
     }
 
     @Override
     public String add(int index, String item) {
-        rangeCheckForAdd(index);
-        if (stringArray.length < size + 1) {
-            String[] stringArrayTemp = new String[stringArray.length + 10];
-            System.arraycopy(stringArray, 0, stringArrayTemp, 0, stringArray.length);
-            stringArray = stringArrayTemp;
+        validateIndex(index);
+        if (storage.length < size + 1) {
+            grow();
         }
         for (int i = index; i < size + 1; i++) {
-            stringArray[i + 1] = stringArray[i];
+            storage[i + 1] = storage[i];
         }
         return add(item, index);
     }
 
+    private void grow() {
+        String[] newStringArray = new String[storage.length + storage.length / 2];
+        System.arraycopy(storage, 0, newStringArray, 0, storage.length);
+        storage = newStringArray;
+    }
+
     @Override
     public String set(int index, String item) {
-        rangeCheckForAdd(index);
-        stringArray[index] = item;
-        return stringArray[index];
+        validateIndex(index);
+        storage[index] = item;
+        return storage[index];
     }
 
     @Override
     public String remove(String item) {
         int index = indexOf(item);
-        String strTemp = stringArray[index];
-        if (index>0){
-                for (int j = index; j < stringArray.length; j++) {
-                    stringArray[j] = stringArray[j - 1];
-                }
-                size--;
-                return strTemp;
-            }
+        String strTemp = storage[index];
+        if (index > 0) {
+            System.arraycopy(storage, index + 1, storage, index, storage.length - index - 1);
+            size--;
+            return strTemp;
+        }
         throw new IllegalArgumentException("Элемента нет в списке");
     }
 
     @Override
     public String remove(int index) {
-        rangeCheckForAdd(index);
-        String strTemp = stringArray[index];
-        for (int i = index; i < stringArray.length; i++) {
-            stringArray[i] = stringArray[i + 1];
-        }
+        validateIndex(index);
+        String strTemp = storage[index];
+        System.arraycopy(storage, index + 1, storage, index, storage.length - index - 1);
         size--;
         return strTemp;
     }
 
     @Override
     public boolean contains(String item) {
-        for (int i = 0; i <= size; i++) {
-            if (stringArray[i].equals(item)) {
-                return true;
-            }
-        }
-        return false;
+
+        return indexOf(item) >= 0;
     }
 
     @Override
     public int indexOf(String item) {
-        for (int i = 0; i < stringArray.length; i++) {
-            if (stringArray[i].equals(item)) {
+        for (int i = 0; i < size; i++) {
+            if (storage[i].equals(item)) {
                 return i;
             }
         }
@@ -106,8 +100,8 @@ public class StringListImpl implements StringList {
 
     @Override
     public int lastIndexOf(String item) {
-        for (int i = stringArray.length - 1; i >= 0; i--) {
-            if (stringArray[i].equals(item)) {
+        for (int i = storage.length - 1; i >= 0; i--) {
+            if (storage[i].equals(item)) {
                 return i;
             }
         }
@@ -116,25 +110,20 @@ public class StringListImpl implements StringList {
 
     @Override
     public String get(int index) {
-        rangeCheckForAdd(index);
-        return stringArray[index];
+        validateIndex(index);
+        return storage[index];
     }
 
     @Override
     public boolean equals(String[] otherList) {
-        if (stringArray.length != otherList.length) {
+        if (storage.length != otherList.length) {
             return false;
         }
-        return Arrays.equals(stringArray, otherList);
+        return Arrays.equals(toArray(), otherList);
     }
 
     @Override
     public int size() {
-        for (int i = 0; i < stringArray.length; i++) {
-            if (!stringArray[i].equals(null)) {
-                size++;
-            }
-        }
         return size;
     }
 
@@ -145,20 +134,11 @@ public class StringListImpl implements StringList {
 
     @Override
     public void clear() {
-        Arrays.fill(stringArray, null);
         size = 0;
     }
 
     @Override
     public String[] toArray() {
-        String[] newStringArray = new String[size];
-        int j = 0;
-        for (int i = 0; i < size; i++) {
-            if (!stringArray[i].equals(null)) {
-                newStringArray[j] = stringArray[i];
-                j++;
-            }
-        }
-        return newStringArray;
+        return Arrays.copyOf(storage, size);
     }
 }
